@@ -1,6 +1,6 @@
 {
   "name": "@vskstudio/takt-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Model Context Protocol server for Takt privacy-friendly analytics — query your sites' stats from any MCP-aware AI agent",
   "license": "MIT",
   "author": "VSK Studio",
