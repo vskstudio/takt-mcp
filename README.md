@@ -9,10 +9,10 @@ The server is a thin, read-only client over the Takt public API. It runs **on yo
 - Node.js ≥ 18
 - A self-hosted Takt instance
 - A Takt **API key** (Dashboard → Settings → API keys) with the permissions for the tools you want to use:
-  - `stats:read` — summary, timeseries, breakdown, realtime, revenue
-  - `goals:read` — goals
-  - `funnels:read` — funnels
-  - `sites:read` — list_sites
+  - `stats:read` — every reporting tool (summary, timeseries, breakdown, realtime, goals, funnels, revenue)
+  - `sites:read` — `list_sites`
+
+A Takt API key is **bound to a single site**. So `list_sites` returns just that one site, and the `domain` you pass to the other tools must be the key's own domain (any other domain returns "site not found"). To cover several sites, mint one key per site and run one server instance per key.
 
 ## Configuration
 
@@ -63,8 +63,8 @@ TAKT_BASE_URL=https://takt.example.com TAKT_API_KEY=takt_sk_… npx @vskstudio/t
 | `get_timeseries` | Visitors/pageviews over time, bucketed by hour or day.            | `stats:read`   |
 | `get_breakdown`  | Top values of a dimension (pages, sources, countries, devices…).  | `stats:read`   |
 | `get_realtime`   | Visitors active in the last 5 minutes.                            | `stats:read`   |
-| `get_goals`      | Conversions per goal.                                             | `goals:read`   |
-| `get_funnels`    | Step-by-step funnel reports.                                      | `funnels:read` |
+| `get_goals`      | Conversions per goal.                                             | `stats:read`   |
+| `get_funnels`    | Step-by-step funnel reports.                                      | `stats:read`   |
 | `get_revenue`    | Revenue grouped by currency for a revenue event.                  | `stats:read`   |
 
 Most tools accept a time filter: `period` (`day`, `7d`, `30d`, `month`, `6mo`, `12mo`), or an explicit `from`/`to` range (`YYYY-MM-DD`), plus an optional `tz` (IANA timezone). `get_summary` and `get_timeseries` also accept `compareToPrevious` to return the previous period.

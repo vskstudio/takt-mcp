@@ -79,6 +79,12 @@ describe('tools', () => {
     )
   })
 
+  it('encodes the domain into the path (no injection)', async () => {
+    const c = clientSpy()
+    await tool('get_realtime').run(c, config, { domain: 'a.io/../../admin' })
+    expect(c.get).toHaveBeenCalledWith('/sites/a.io%2F..%2F..%2Fadmin/stats/realtime')
+  })
+
   it('get_revenue forwards the event name', async () => {
     const c = clientSpy()
     await tool('get_revenue').run(c, config, { domain: 'x.io', event: 'Purchase' })

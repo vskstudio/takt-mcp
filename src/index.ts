@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { loadConfig } from './config.js'
 import { createServer } from './server.js'
@@ -23,7 +24,7 @@ async function main() {
 
 // Only auto-start when run as the CLI entrypoint, so the module stays importable
 // (and testable) without spawning a stdio server.
-if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
     console.error(`takt-mcp: fatal: ${err instanceof Error ? err.stack : String(err)}`)
     process.exit(1)

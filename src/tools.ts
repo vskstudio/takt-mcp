@@ -24,6 +24,10 @@ export interface ToolDef {
   run(client: TaktClient, config: Config, args: Record<string, unknown>): Promise<unknown>
 }
 
+// Encode a value before splicing it into a URL path segment, so an org/domain
+// can never inject extra path components.
+const seg = (v: unknown) => encodeURIComponent(String(v))
+
 function orgOf(config: Config, args: { org?: string }): string {
   const org = args.org ?? config.defaultOrg
   if (!org) throw new Error('no organization given: pass `org` or set TAKT_ORG')
@@ -35,7 +39,7 @@ export const tools: ToolDef[] = [
     name: 'list_sites',
     description: 'List the sites (domains) in an organization. Requires a key with the sites:read permission.',
     shape: { org: z.string().optional().describe('Org slug. Defaults to TAKT_ORG if set.') },
-    run: (client, config, a) => client.get(`/orgs/${orgOf(config, a)}/sites`),
+    run: (client, config, a) => client.get(`/orgs/${seg(orgOf(config, a))}/sites`),
   },
   {
     name: 'get_summary',
@@ -47,7 +51,7 @@ export const tools: ToolDef[] = [
       compareToPrevious: z.boolean().optional().describe('Also return the previous period of equal length.'),
     },
     run: (client, _config, a) =>
-      client.get(`/sites/${a.domain}/stats/summary`, {
+      client.get(`/sites/${seg(a.domain)}/stats/summary`, {
         ...timeQuery(a),
         compare: a.compareToPrevious ? 'previous' : undefined,
       }),
@@ -62,7 +66,7 @@ export const tools: ToolDef[] = [
       compareToPrevious: z.boolean().optional().describe('Also return the previous period series.'),
     },
     run: (client, _config, a) =>
-      client.get(`/sites/${a.domain}/stats/timeseries`, {
+      client.get(`/sites/${seg(a.domain)}/stats/timeseries`, {
         ...timeQuery(a),
         interval: a.interval as string | undefined,
         compare: a.compareToPrevious ? 'previous' : undefined,
@@ -95,7 +99,7 @@ export const tools: ToolDef[] = [
       limit: z.number().int().positive().optional().describe('Max rows (default 10).'),
     },
     run: (client, _config, a) =>
-      client.get(`/sites/${a.domain}/stats/breakdown`, {
+      client.get(`/sites/${seg(a.domain)}/stats/breakdown`, {
         ...timeQuery(a),
         dimension: a.dimension as string,
         country: a.country as string | undefined,
@@ -106,19 +110,19 @@ export const tools: ToolDef[] = [
     name: 'get_realtime',
     description: 'Number of visitors active on a site in the last 5 minutes.',
     shape: { domain: z.string().describe('Site domain.') },
-    run: (client, _config, a) => client.get(`/sites/${a.domain}/stats/realtime`),
+    run: (client, _config, a) => client.get(`/sites/${seg(a.domain)}/stats/realtime`),
   },
   {
     name: 'get_goals',
-    description: 'Conversions per goal for a site. Requires a key with the goals:read permission.',
+    description: 'Conversions per goal for a site. Requires a key with the stats:read permission.',
     shape: { domain: z.string().describe('Site domain.'), ...timeShape },
-    run: (client, _config, a) => client.get(`/sites/${a.domain}/stats/goals`, timeQuery(a)),
+    run: (client, _config, a) => client.get(`/sites/${seg(a.domain)}/stats/goals`, timeQuery(a)),
   },
   {
     name: 'get_funnels',
-    description: 'Funnel reports (step-by-step conversion) for a site. Requires a key with the funnels:read permission.',
+    description: 'Funnel reports (step-by-step conversion) for a site. Requires a key with the stats:read permission.',
     shape: { domain: z.string().describe('Site domain.'), ...timeShape },
-    run: (client, _config, a) => client.get(`/sites/${a.domain}/stats/funnels`, timeQuery(a)),
+    run: (client, _config, a) => client.get(`/sites/${seg(a.domain)}/stats/funnels`, timeQuery(a)),
   },
   {
     name: 'get_revenue',
@@ -129,6 +133,6 @@ export const tools: ToolDef[] = [
       ...timeShape,
     },
     run: (client, _config, a) =>
-      client.get(`/sites/${a.domain}/stats/revenue`, { ...timeQuery(a), event: a.event as string }),
+      client.get(`/sites/${seg(a.domain)}/stats/revenue`, { ...timeQuery(a), event: a.event as string }),
   },
 ]
