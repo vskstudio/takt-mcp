@@ -1,4 +1,6 @@
 import type { Config } from './config.js'
+import { fetchResilient, type HttpOptions } from './http.js'
+import { noopLogger, type Logger } from './logger.js'
 
 export class TaktApiError extends Error {
   constructor(
@@ -13,15 +15,27 @@ export class TaktApiError extends Error {
 
 export type Query = Record<string, string | number | undefined>
 
+export interface ClientDeps {
+  fetchImpl?: typeof fetch
+  logger?: Logger
+  /** Overrides passed through to the resilient HTTP layer (tests inject sleep/backoff). */
+  http?: Partial<HttpOptions>
+}
+
 // Thin authenticated client over the Takt public read API (/api/v1). All calls
-// are GET; the API key is sent as a Bearer token. Errors are normalised to
-// TaktApiError so tool handlers can surface a clean message (including the 402
-// "API quota exceeded" case from the billing axis).
+// are GET; the API key is sent as a Bearer token. Transient failures are retried
+// by the HTTP layer; non-2xx responses are normalised to TaktApiError so tool
+// handlers can surface a clean message (including the 402 "API quota exceeded"
+// case from the billing axis).
 export class TaktClient {
+  private readonly logger: Logger
+
   constructor(
     private readonly config: Config,
-    private readonly fetchImpl: typeof fetch = fetch,
-  ) {}
+    private readonly deps: ClientDeps = {},
+  ) {
+    this.logger = deps.logger ?? noopLogger
+  }
 
   async get<T>(path: string, query: Query = {}): Promise<T> {
     const url = new URL(`${this.config.baseUrl}/api/v1${path}`)
@@ -29,14 +43,21 @@ export class TaktClient {
       if (value !== undefined && value !== '') url.searchParams.set(key, String(value))
     }
 
+    this.logger.debug('GET', { path, query })
+
     let res: Response
     try {
-      res = await this.fetchImpl(url, {
-        headers: {
-          authorization: `Bearer ${this.config.apiKey}`,
-          accept: 'application/json',
+      res = await fetchResilient(
+        url,
+        { headers: { authorization: `Bearer ${this.config.apiKey}`, accept: 'application/json' } },
+        {
+          timeoutMs: this.config.timeoutMs,
+          maxRetries: this.config.maxRetries,
+          fetchImpl: this.deps.fetchImpl,
+          logger: this.logger,
+          ...this.deps.http,
         },
-      })
+      )
     } catch (cause) {
       throw new TaktApiError(0, 'network_error', `cannot reach Takt at ${this.config.baseUrl}: ${String(cause)}`)
     }
@@ -52,6 +73,7 @@ export class TaktClient {
       } catch {
         // non-JSON error body: keep the raw text
       }
+      this.logger.debug('error response', { status: res.status, code })
       throw new TaktApiError(res.status, code, message)
     }
 

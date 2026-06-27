@@ -135,4 +135,31 @@ export const tools: ToolDef[] = [
     run: (client, _config, a) =>
       client.get(`/sites/${seg(a.domain)}/stats/revenue`, { ...timeQuery(a), event: a.event as string }),
   },
+  {
+    name: 'list_event_properties',
+    description: 'List the custom property keys recorded for a given event on a site.',
+    shape: {
+      domain: z.string().describe('Site domain.'),
+      event: z.string().describe('Event name, e.g. Signup.'),
+      ...timeShape,
+    },
+    run: (client, _config, a) =>
+      client.get(`/sites/${seg(a.domain)}/stats/properties`, { ...timeQuery(a), event: a.event as string }),
+  },
+  {
+    name: 'get_property_breakdown',
+    description: 'Break down a custom property of an event by value (e.g. counts per plan for a Signup event).',
+    shape: {
+      domain: z.string().describe('Site domain.'),
+      event: z.string().describe('Event name.'),
+      key: z.string().describe('Custom property key, e.g. plan.'),
+      ...timeShape,
+    },
+    run: (client, _config, a) =>
+      client.get(`/sites/${seg(a.domain)}/stats/property-breakdown`, {
+        ...timeQuery(a),
+        event: a.event as string,
+        key: a.key as string,
+      }),
+  },
 ]

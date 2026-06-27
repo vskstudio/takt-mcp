@@ -1,10 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { TaktApiError, TaktClient } from './client.js'
 import type { Config } from './config.js'
+import { createLogger } from './logger.js'
+import { registerResources } from './resources.js'
 import { tools } from './tools.js'
+import { VERSION } from './version.js'
 
-export function createServer(config: Config, client: TaktClient = new TaktClient(config)): McpServer {
-  const server = new McpServer({ name: 'takt-mcp', version: '0.1.0' })
+export function createServer(
+  config: Config,
+  client: TaktClient = new TaktClient(config, { logger: createLogger(config.debug) }),
+): McpServer {
+  const server = new McpServer({ name: 'takt-mcp', version: VERSION })
 
   for (const tool of tools) {
     server.registerTool(
@@ -26,6 +32,8 @@ export function createServer(config: Config, client: TaktClient = new TaktClient
       },
     )
   }
+
+  registerResources(server, client, config)
 
   return server
 }
