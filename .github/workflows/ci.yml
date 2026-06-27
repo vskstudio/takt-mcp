@@ -37,5 +37,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      # Build avant test : cli.test.ts exerce le binaire compilé (dist/index.js)
+      # via un symlink pour reproduire le lancement npx/.bin. Sans dist préalable,
+      # le spawn échoue en « module introuvable ».
       - run: pnpm build
+      - run: pnpm test
