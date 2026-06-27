@@ -1,5 +1,11 @@
 # @vskstudio/takt-mcp
 
+## 0.2.1
+
+### Patch Changes
+
+- 3c84e15: Release the HTTP response body before retrying a transient failure so the connection returns to the pool. Drop the redundant build from the `release` script (`prepublishOnly` already builds).
+
 ## 0.2.0
 
 ### Minor Changes
