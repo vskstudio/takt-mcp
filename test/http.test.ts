@@ -27,6 +27,17 @@ describe('fetchResilient', () => {
     expect((fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls.length).toBe(2)
   })
 
+  it('drains the response body before retrying', async () => {
+    const cancel = vi.fn(async () => {})
+    const responses = [
+      { status: 503, headers: new Headers(), body: { cancel } } as unknown as Response,
+      ok(200),
+    ]
+    const fetchImpl = vi.fn(async () => responses.shift()) as unknown as typeof fetch
+    await fetchResilient(url, {}, baseOpts({ fetchImpl }))
+    expect(cancel).toHaveBeenCalledTimes(1)
+  })
+
   it('honours Retry-After over the default backoff', async () => {
     const responses = [ok(429, { 'retry-after': '2' }), ok(200)]
     const fetchImpl = vi.fn(async () => responses.shift()) as unknown as typeof fetch

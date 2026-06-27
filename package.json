@@ -48,7 +48,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "prepublishOnly": "pnpm build",
-    "release": "pnpm build && changeset publish"
+    "release": "changeset publish"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.13.0",

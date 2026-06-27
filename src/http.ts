@@ -59,6 +59,8 @@ export async function fetchResilient(url: URL, init: RequestInit, opts: HttpOpti
       if (RETRYABLE.has(res.status) && attempt < opts.maxRetries) {
         const wait = retryAfterMs(res.headers.get('retry-after')) ?? backoff(attempt)
         logger.debug('retrying after transient status', { status: res.status, attempt, waitMs: wait })
+        // Release the connection back to the pool before the next attempt.
+        await res.body?.cancel().catch(() => {})
         await sleep(wait)
         continue
       }
