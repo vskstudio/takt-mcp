@@ -37,9 +37,26 @@ The server is a thin, **read-only** client over the Takt public API. It runs **o
 
 ## Quick start
 
-### Claude Desktop / Claude Code
+The server runs straight from npm with `npx` — nothing to install or build. Every
+client below boils down to the same command, `npx -y @vskstudio/takt-mcp`, plus
+your `TAKT_BASE_URL` / `TAKT_API_KEY` in the environment.
 
-Add it to your MCP config (`claude_desktop_config.json`, or `.mcp.json` for Claude Code):
+### Claude Code
+
+One command, no file to edit (use `-s user` for a global install instead of the
+current project):
+
+```bash
+claude mcp add takt \
+  -e TAKT_BASE_URL=https://takt.example.com \
+  -e TAKT_API_KEY=takt_sk_… \
+  -e TAKT_ORG=my-org \
+  -- npx -y @vskstudio/takt-mcp
+```
+
+### Claude Desktop
+
+Edit `claude_desktop_config.json` (Settings → Developer → Edit Config):
 
 ```json
 {
@@ -57,19 +74,45 @@ Add it to your MCP config (`claude_desktop_config.json`, or `.mcp.json` for Clau
 }
 ```
 
-### Any MCP client
+### Codex CLI
 
-The package ships a `takt-mcp` binary speaking MCP over stdio:
+Add a block to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.takt]
+command = "npx"
+args = ["-y", "@vskstudio/takt-mcp"]
+env = { TAKT_BASE_URL = "https://takt.example.com", TAKT_API_KEY = "takt_sk_…", TAKT_ORG = "my-org" }
+```
+
+### Cursor / Windsurf
+
+Use the same `mcpServers` JSON as Claude Desktop, in `~/.cursor/mcp.json`
+(Cursor) or `~/.codeium/windsurf/mcp_config.json` (Windsurf).
+
+### VS Code (Copilot / Cline)
 
 ```bash
-TAKT_BASE_URL=https://takt.example.com TAKT_API_KEY=takt_sk_… npx @vskstudio/takt-mcp
+code --add-mcp '{"name":"takt","command":"npx","args":["-y","@vskstudio/takt-mcp"],"env":{"TAKT_BASE_URL":"https://takt.example.com","TAKT_API_KEY":"takt_sk_…","TAKT_ORG":"my-org"}}'
+```
+
+Or commit a `.mcp.json` (Cline) / `.vscode/mcp.json` (Copilot, under a `"servers"`
+key) with the same fields.
+
+### Any other MCP client
+
+The package ships a `takt-mcp` binary speaking MCP over stdio, so any client that
+can launch a command works:
+
+```bash
+TAKT_BASE_URL=https://takt.example.com TAKT_API_KEY=takt_sk_… npx -y @vskstudio/takt-mcp
 ```
 
 Useful flags:
 
 ```bash
-takt-mcp --version   # print the version
-takt-mcp --help      # print usage and the full environment reference
+npx @vskstudio/takt-mcp --version   # print the version
+npx @vskstudio/takt-mcp --help      # print usage and the full environment reference
 ```
 
 ## Configuration

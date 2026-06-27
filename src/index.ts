@@ -1,4 +1,5 @@
-import { pathToFileURL } from 'node:url'
+import { realpathSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { loadConfig } from './config.js'
 import { createServer } from './server.js'
@@ -54,8 +55,21 @@ async function main() {
 }
 
 // Only auto-start when run as the CLI entrypoint, so the module stays importable
-// (and testable) without spawning a stdio server.
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// (and testable) without spawning a stdio server. argv[1] is resolved through
+// realpath because npm/npx launch the bin via a symlink (node_modules/.bin) —
+// comparing the raw symlink path to the real module URL would never match and
+// the server would silently never start.
+function isCliEntrypoint(): boolean {
+  const entry = process.argv[1]
+  if (!entry) return false
+  try {
+    return realpathSync(entry) === fileURLToPath(import.meta.url)
+  } catch {
+    return false
+  }
+}
+
+if (isCliEntrypoint()) {
   main().catch((err) => {
     console.error(`takt-mcp: fatal: ${err instanceof Error ? err.stack : String(err)}`)
     process.exit(1)
