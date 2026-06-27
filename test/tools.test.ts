@@ -3,7 +3,14 @@ import { tools } from '../src/tools.js'
 import type { TaktClient } from '../src/client.js'
 import type { Config } from '../src/config.js'
 
-const config: Config = { baseUrl: 'https://t.io', apiKey: 'k', defaultOrg: 'acme' }
+const config: Config = {
+  baseUrl: 'https://t.io',
+  apiKey: 'k',
+  defaultOrg: 'acme',
+  timeoutMs: 5_000,
+  maxRetries: 0,
+  debug: false,
+}
 
 function clientSpy() {
   const get = vi.fn(async () => ({ ok: true }))
@@ -23,10 +30,12 @@ describe('tools', () => {
       'get_breakdown',
       'get_funnels',
       'get_goals',
+      'get_property_breakdown',
       'get_realtime',
       'get_revenue',
       'get_summary',
       'get_timeseries',
+      'list_event_properties',
       'list_sites',
     ])
     expect(new Set(names).size).toBe(names.length)
