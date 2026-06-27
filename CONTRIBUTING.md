@@ -49,12 +49,14 @@ filters live in the shared `timeShape` / `timeQuery` helpers.
 
 ## Releasing
 
-Releases use [changesets](https://github.com/changesets/changesets):
+Releases use [changesets](https://github.com/changesets/changesets) and ship as
+**GitHub Releases** (no npm publish):
 
 1. Add a changeset with `pnpm changeset`, describing the change and the semver bump.
 2. On merge to `main`, CI opens (or updates) a **Version Packages** PR that applies
-   the bump and updates the changelog. Bump `src/version.ts` to match in that PR.
-3. Merging the Version Packages PR triggers CI to publish to npm with provenance.
+   the bump and updates `CHANGELOG.md`. Bump `src/version.ts` to match in that PR.
+3. Merging the Version Packages PR makes CI tag the commit (`vX.Y.Z`) and publish a
+   GitHub Release from the matching changelog section.
 
 ## Commit style
 

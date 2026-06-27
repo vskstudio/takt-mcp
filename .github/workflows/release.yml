@@ -1,17 +1,14 @@
 name: Release
-# Changesets-driven release. On every push to main this either:
-#   - opens/updates a "Version Packages" PR (when unreleased changesets exist), or
-#   - publishes to npm (once that PR is merged and the version bump lands).
-# Publishing authenticates with a granular NPM_TOKEN ("bypass 2FA" enabled) and
-# emits a signed provenance attestation.
+# GitHub-only release flow (no npm). On every push to main this either:
+#   - opens/updates a "Version Packages" PR when unreleased changesets exist, or
+#   - once that PR merges and package.json's version bumps, tags the commit and
+#     publishes a GitHub Release from the matching CHANGELOG section.
 on:
   push:
     branches: [main]
-# Needs write access to push the version PR and tags; id-token for npm provenance.
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -24,22 +21,42 @@ jobs:
     steps:
       # Pinned to full commit SHAs; trailing comment tracks the version.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 20
           cache: pnpm
-          registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      # Gate before anything can publish — never ship an unverified tarball.
+      # Gate before any release artifact is produced.
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm build
+      # When changesets are pending, open/update the Version Packages PR.
       - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           version: pnpm changeset version
-          publish: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+      # When the version on main has no tag yet, tag it and cut a GitHub Release
+      # from the matching CHANGELOG section.
+      - name: Tag and release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          tag="v${version}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists — nothing to release."
+            exit 0
+          fi
+          notes="$(awk -v ver="## ${version}" '
+            $0==ver {grab=1; next}
+            grab && /^## / {exit}
+            grab {print}
+          ' CHANGELOG.md)"
+          git tag "$tag"
+          git push origin "$tag"
+          printf '%s\n' "$notes" | gh release create "$tag" --title "$tag" --notes-file - --latest
