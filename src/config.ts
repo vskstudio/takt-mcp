@@ -1,5 +1,5 @@
 export interface Config {
-  /** Base URL of the Takt instance, e.g. https://takt.example.com (no trailing slash). */
+  /** Base URL of the Takt instance, e.g. https://taktlytics.com (no trailing slash). */
   baseUrl: string
   /** API key (Bearer) minted in the Takt dashboard. */
   apiKey: string
@@ -20,6 +20,8 @@ export class ConfigError extends Error {
   }
 }
 
+/** Hosted Takt origin, used as the base URL when none is provided. */
+export const DEFAULT_BASE_URL = 'https://taktlytics.com'
 const DEFAULT_TIMEOUT_MS = 15_000
 const DEFAULT_MAX_RETRIES = 2
 
@@ -37,17 +39,14 @@ function boolEnv(raw: string | undefined): boolean {
   return v === '1' || v === 'true' || v === 'yes' || v === 'on'
 }
 
-// Reads configuration from the environment. Takt is self-hosted, so there is no
-// canonical default base URL — the operator must point the server at their own
-// instance.
+// Reads configuration from the environment. TAKT_BASE_URL defaults to the hosted
+// Takt origin (https://taktlytics.com) so the server works out of the box;
+// self-hosted operators override it to point at their own instance.
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const baseUrl = (env.TAKT_BASE_URL ?? '').trim().replace(/\/+$/, '')
+  const baseUrl = ((env.TAKT_BASE_URL ?? '').trim() || DEFAULT_BASE_URL).replace(/\/+$/, '')
   const apiKey = (env.TAKT_API_KEY ?? '').trim()
   const defaultOrg = (env.TAKT_ORG ?? '').trim() || undefined
 
-  if (!baseUrl) {
-    throw new ConfigError('TAKT_BASE_URL is required (e.g. https://takt.example.com)')
-  }
   let parsed: URL
   try {
     parsed = new URL(baseUrl)

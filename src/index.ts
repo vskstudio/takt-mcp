@@ -22,7 +22,7 @@ Usage:
   takt-mcp --help         Print this help and exit
 
 Environment:
-  TAKT_BASE_URL    (required) Base URL of the Takt instance, e.g. https://takt.example.com
+  TAKT_BASE_URL    (optional) Base URL of the Takt instance (default https://taktlytics.com)
   TAKT_API_KEY     (required) API key minted in the Takt dashboard (single-site scoped)
   TAKT_ORG         (optional) Default org slug for list_sites and the sites resource
   TAKT_TIMEOUT_MS  (optional) Per-request timeout in ms (default 15000, range 1000-120000)

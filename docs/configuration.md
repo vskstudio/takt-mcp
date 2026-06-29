@@ -8,7 +8,7 @@ binary directly).
 
 | Variable           | Required | Default | Range / format            | Notes                                                        |
 | ------------------ | -------- | ------- | ------------------------- | ------------------------------------------------------------ |
-| `TAKT_BASE_URL`    | yes      | —       | `http(s)` URL             | Trailing slashes are stripped. Validated at startup.         |
+| `TAKT_BASE_URL`    | no       | `https://taktlytics.com` | `http(s)` URL | Defaults to the hosted Takt origin; set it to point at a self-hosted instance. Trailing slashes are stripped. Validated at startup. |
 | `TAKT_API_KEY`     | yes      | —       | string                    | Sent as `Authorization: Bearer …`. Never logged.             |
 | `TAKT_ORG`         | no       | —       | slug                      | Default org for `list_sites` and the `takt://sites` resource. |
 | `TAKT_TIMEOUT_MS`  | no       | `15000` | integer `1000`–`120000`   | Per-request timeout in milliseconds.                         |
@@ -42,12 +42,12 @@ per key:
     "takt-blog": {
       "command": "npx",
       "args": ["-y", "@vskstudio/takt-mcp"],
-      "env": { "TAKT_BASE_URL": "https://takt.example.com", "TAKT_API_KEY": "takt_sk_blog_…" }
+      "env": { "TAKT_BASE_URL": "https://taktlytics.com", "TAKT_API_KEY": "takt_sk_blog_…" }
     },
     "takt-shop": {
       "command": "npx",
       "args": ["-y", "@vskstudio/takt-mcp"],
-      "env": { "TAKT_BASE_URL": "https://takt.example.com", "TAKT_API_KEY": "takt_sk_shop_…" }
+      "env": { "TAKT_BASE_URL": "https://taktlytics.com", "TAKT_API_KEY": "takt_sk_shop_…" }
     }
   }
 }

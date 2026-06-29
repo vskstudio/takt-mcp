@@ -6,7 +6,7 @@
 
 [Model Context Protocol](https://modelcontextprotocol.io) server for [Takt](https://github.com/vskstudio) — query your sites' privacy-friendly analytics from any MCP-aware AI agent (Claude Desktop, Claude Code, Cursor, …).
 
-The server is a thin, **read-only** client over the Takt public API. It runs **on your machine** and talks to **your** Takt instance using **your** API key — no analytics data is exposed publicly, and nothing is hosted by us.
+The server is a thin, **read-only** client over the Takt public API. It runs **on your machine** and talks to a Takt instance using **your** API key — by default the hosted origin `https://taktlytics.com`, or your own self-hosted instance via `TAKT_BASE_URL`.
 
 ```
 ┌─────────────┐   stdio (MCP)   ┌────────────┐   HTTPS + Bearer   ┌──────────────┐
@@ -28,7 +28,7 @@ The server is a thin, **read-only** client over the Takt public API. It runs **o
 ## Requirements
 
 - Node.js ≥ 18
-- A self-hosted Takt instance
+- A Takt account on the hosted service (`https://taktlytics.com`), or a self-hosted Takt instance (set `TAKT_BASE_URL`)
 - A Takt **API key** (Dashboard → Settings → API keys) with the permissions for the tools you want to use:
   - `stats:read` — every reporting tool (summary, timeseries, breakdown, realtime, goals, funnels, revenue, event properties, property breakdown)
   - `sites:read` — `list_sites`
@@ -48,7 +48,7 @@ current project):
 
 ```bash
 claude mcp add takt \
-  -e TAKT_BASE_URL=https://takt.example.com \
+  -e TAKT_BASE_URL=https://taktlytics.com \
   -e TAKT_API_KEY=takt_sk_… \
   -e TAKT_ORG=my-org \
   -- npx -y @vskstudio/takt-mcp
@@ -65,7 +65,7 @@ Edit `claude_desktop_config.json` (Settings → Developer → Edit Config):
       "command": "npx",
       "args": ["-y", "@vskstudio/takt-mcp"],
       "env": {
-        "TAKT_BASE_URL": "https://takt.example.com",
+        "TAKT_BASE_URL": "https://taktlytics.com",
         "TAKT_API_KEY": "takt_sk_…",
         "TAKT_ORG": "my-org"
       }
@@ -82,7 +82,7 @@ Add a block to `~/.codex/config.toml`:
 [mcp_servers.takt]
 command = "npx"
 args = ["-y", "@vskstudio/takt-mcp"]
-env = { TAKT_BASE_URL = "https://takt.example.com", TAKT_API_KEY = "takt_sk_…", TAKT_ORG = "my-org" }
+env = { TAKT_BASE_URL = "https://taktlytics.com", TAKT_API_KEY = "takt_sk_…", TAKT_ORG = "my-org" }
 ```
 
 ### Cursor / Windsurf
@@ -93,7 +93,7 @@ Use the same `mcpServers` JSON as Claude Desktop, in `~/.cursor/mcp.json`
 ### VS Code (Copilot / Cline)
 
 ```bash
-code --add-mcp '{"name":"takt","command":"npx","args":["-y","@vskstudio/takt-mcp"],"env":{"TAKT_BASE_URL":"https://takt.example.com","TAKT_API_KEY":"takt_sk_…","TAKT_ORG":"my-org"}}'
+code --add-mcp '{"name":"takt","command":"npx","args":["-y","@vskstudio/takt-mcp"],"env":{"TAKT_BASE_URL":"https://taktlytics.com","TAKT_API_KEY":"takt_sk_…","TAKT_ORG":"my-org"}}'
 ```
 
 Or commit a `.mcp.json` (Cline) / `.vscode/mcp.json` (Copilot, under a `"servers"`
@@ -105,7 +105,7 @@ The package ships a `takt-mcp` binary speaking MCP over stdio, so any client tha
 can launch a command works:
 
 ```bash
-TAKT_BASE_URL=https://takt.example.com TAKT_API_KEY=takt_sk_… npx -y @vskstudio/takt-mcp
+TAKT_BASE_URL=https://taktlytics.com TAKT_API_KEY=takt_sk_… npx -y @vskstudio/takt-mcp
 ```
 
 Useful flags:
@@ -121,7 +121,7 @@ The server is configured entirely through environment variables:
 
 | Variable           | Required | Default | Description                                                                    |
 | ------------------ | -------- | ------- | ------------------------------------------------------------------------------ |
-| `TAKT_BASE_URL`    | yes      | —       | Base URL of your Takt instance, e.g. `https://takt.example.com`. Must be `http(s)`. |
+| `TAKT_BASE_URL`    | no       | `https://taktlytics.com` | Base URL of the Takt instance. Defaults to the hosted origin; set it to point at a self-hosted instance. Must be `http(s)`. |
 | `TAKT_API_KEY`     | yes      | —       | API key, sent as a `Bearer` token. Never logged.                               |
 | `TAKT_ORG`         | no       | —       | Default organization slug for `list_sites` and the `takt://sites` resource.    |
 | `TAKT_TIMEOUT_MS`  | no       | `15000` | Per-request timeout in ms (range `1000`–`120000`).                             |
@@ -176,8 +176,8 @@ See [docs/architecture.md](./docs/architecture.md) for the module layout and des
 
 | Symptom                                    | Likely cause / fix                                                            |
 | ------------------------------------------ | ----------------------------------------------------------------------------- |
-| `TAKT_BASE_URL is required`                | The env var is unset or empty in your MCP client config.                      |
-| `TAKT_BASE_URL must use http:// or https://` | Include the scheme, e.g. `https://takt.example.com`.                        |
+| `TAKT_BASE_URL is not a valid URL`         | If set, it must be a full URL — e.g. `https://taktlytics.com`. Leave it unset to use the hosted origin. |
+| `TAKT_BASE_URL must use http:// or https://` | Include the scheme, e.g. `https://taktlytics.com`.                        |
 | `Takt API error (401 …)`                   | The key is wrong or revoked.                                                   |
 | `Takt API error (403 …)`                   | The key lacks the required permission (`stats:read` / `sites:read`).          |
 | `site not found`                           | The `domain` is not the key's site — keys are single-site bound.              |

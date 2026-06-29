@@ -43,8 +43,14 @@ describe('loadConfig', () => {
     expect(cfg.defaultOrg).toBeUndefined()
   })
 
-  it('requires a base url', () => {
-    expect(() => loadConfig({ TAKT_API_KEY: 'k' } as NodeJS.ProcessEnv)).toThrow(/TAKT_BASE_URL is required/)
+  it('defaults the base url to the hosted Takt origin', () => {
+    const cfg = loadConfig({ TAKT_API_KEY: 'k' } as NodeJS.ProcessEnv)
+    expect(cfg.baseUrl).toBe('https://taktlytics.com')
+  })
+
+  it('lets an explicit base url override the hosted default', () => {
+    const cfg = loadConfig({ TAKT_BASE_URL: 'https://takt.example.com', TAKT_API_KEY: 'k' } as NodeJS.ProcessEnv)
+    expect(cfg.baseUrl).toBe('https://takt.example.com')
   })
 
   it('rejects a non-http base url', () => {

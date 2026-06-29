@@ -1,5 +1,11 @@
 # @vskstudio/takt-mcp
 
+## 0.3.0
+
+### Minor Changes
+
+- Default `TAKT_BASE_URL` to the hosted Takt origin (`https://taktlytics.com`) so the server works out of the box. Self-hosted operators can still override it by setting `TAKT_BASE_URL`.
+
 ## 0.2.4
 
 ### Patch Changes
