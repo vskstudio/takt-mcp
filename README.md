@@ -1,5 +1,7 @@
 # @vskstudio/takt-mcp
 
+
+> 📚 **Documentation** — [taktlytics.com/docs/reference/mcp](https://taktlytics.com/docs/reference/mcp)
 [![CI](https://github.com/vskstudio/takt-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/vskstudio/takt-mcp/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@vskstudio/takt-mcp.svg)](https://www.npmjs.com/package/@vskstudio/takt-mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
