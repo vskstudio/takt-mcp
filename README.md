@@ -1,10 +1,18 @@
 # @vskstudio/takt-mcp
 
+> [!WARNING]
+> **Deprecated.** This static-key stdio package is no longer the recommended way to connect
+> an AI agent to Takt. Takt now hosts a **remote MCP server with OAuth 2.1** — no API key to
+> generate or copy, per-team and per-scope consent, and one-click revocation. Point your MCP
+> client at `https://taktlytics.com/mcp` instead:
+>
+> ```bash
+> claude mcp add --transport http takt https://taktlytics.com/mcp
+> ```
+>
+> See the [MCP docs](https://taktlytics.com/docs/reference/mcp). This repository is archived
+> and no longer maintained.
 
-> 📚 **Documentation** — [taktlytics.com/docs/reference/mcp](https://taktlytics.com/docs/reference/mcp)
-
-[![CI](https://github.com/vskstudio/takt-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/vskstudio/takt-mcp/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@vskstudio/takt-mcp.svg)](https://www.npmjs.com/package/@vskstudio/takt-mcp)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 [Model Context Protocol](https://modelcontextprotocol.io) server for [Takt](https://github.com/vskstudio) — query your sites' privacy-friendly analytics from any MCP-aware AI agent (Claude Desktop, Claude Code, Cursor, …).
